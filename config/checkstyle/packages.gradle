@@ -1,0 +1,5 @@
+ext.checkstylePackages = [
+        "JavaSource/net/gainsystems/gains/*",
+        "test/src/integration/*",
+        "test/src/unit/*"
+]

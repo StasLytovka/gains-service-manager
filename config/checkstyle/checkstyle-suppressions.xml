@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Suppress Checkstyle check for files -->
+    <!-- Suppress LineLength check for DefaultPasswordsConfig.java -->
+    <suppress checks="LineLength" files=".*[/\\]DefaultPasswordsConfig\.java$" lines="29-53"/>
+    <!-- Suppress InvalidJavadocPosition check for OnhandLotManagementStandaloneTest.java -->
+    <suppress checks="InvalidJavadocPosition" files="test[\\/]src[\\/]net[\\/]gainsystems[\\/]common[\\/]serverbatch[\\/]lotmanagement[\\/]OnhandLotManagementStandaloneTest\.java" lines="75"/>
+    <!-- Suppress LocalVariableName check for OnhandLotManagementStandaloneTest.java -->
+    <suppress checks="LocalVariableName" files="test[\\/]src[\\/]net[\\/]gainsystems[\\/]common[\\/]serverbatch[\\/]lotmanagement[\\/]OnhandLotManagementStandaloneTest\.java" lines="106"/>
+</suppressions>
