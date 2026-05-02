@@ -133,7 +133,7 @@ fi
 # ── sudoers ──────────────────────────────────────────────────────
 echo ""
 echo "=== sudoers ==="
-if [ -f /etc/sudoers.d/gains-manager ]; then
+if sudo test -f /etc/sudoers.d/gains-manager; then
     echo -e "$OK /etc/sudoers.d/gains-manager exists"
     sudo visudo -c -f /etc/sudoers.d/gains-manager 2>/dev/null && \
         echo -e "$OK sudoers syntax OK" || \
