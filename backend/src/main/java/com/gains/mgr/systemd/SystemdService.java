@@ -237,9 +237,35 @@ public class SystemdService {
             return new ActionResult(false, "User '" + username + "' not found on this system");
         }
         try {
+            // Log the exact command being executed
+            log.info(
+                    "ACTION [{}] user={} service={} uid={} command: sudo -u {} env XDG_RUNTIME_DIR=/run/user/{}"
+                            + " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{}/bus systemctl --user {} {}",
+                    action.toUpperCase(),
+                    username,
+                    serviceName,
+                    uid,
+                    username,
+                    uid,
+                    uid,
+                    action,
+                    serviceName
+            );
+
             String output = runUserSystemctl(username, uid, List.of(action, serviceName));
+
+            log.info(
+                    "ACTION [{}] COMPLETED user={} service={} output={}",
+                    action.toUpperCase(), username, serviceName,
+                    output.isBlank() ? "OK" : output.trim()
+            );
+
             return new ActionResult(true, action + " OK for " + serviceName, output);
         } catch (Exception e) {
+            log.error(
+                    "ACTION [{}] FAILED user={} service={} error={}",
+                    action.toUpperCase(), username, serviceName, e.getMessage()
+            );
             return new ActionResult(false, e.getMessage());
         }
     }
