@@ -1,0 +1,33 @@
+1. Загрузить архив на сервер и распаковать:
+# Распаковать рядом с текущим проектом
+tar -xzf gains-service-manager-java.tar.gz -C ~/
+
+2. Сгенерировать Gradle wrapper:
+cd ~/gains-mgr-java/backend
+export PATH="$HOME/tools/gradle-8.7/bin:$PATH"  # если gradle ещё в PATH
+gradle wrapper --gradle-version 8.7
+chmod +x gradlew
+
+3. Собрать JAR:
+./gradlew bootJar
+
+4. Скопировать и перезапустить:
+sudo cp build/libs/gains-service-manager.jar \
+        /opt/gains-service-manager/backend/
+sudo systemctl restart gains-manager
+sudo journalctl -u gains-manager -f
+
+
+Структура для изучения — рекомендую читать в таком порядке:
+#ФайлЧто изучить
+1 Application.java@SpringBootApplication, точка входа
+2 Models.javarecord — Java 17, DTO паттерн
+3 PamAuthService.java@Service, логирование, try/catch
+4 JwtUtil.java@Component, @Value, работа с ключами
+5 AuthController.java@RestController, @PostMapping, ResponseEntity
+6 JwtFilter.javaOncePerRequestFilter, SecurityContext
+7 SecurityConfig.java@Configuration, @Bean, CORS
+8 SystemdService.javaProcessBuilder, Stream API, бизнес-логика
+9 ServiceController.java@PathVariable, @RequestParam
+
+SystemdService.java — самый большой и интересный файл, там вся реальная логика работы с Linux.

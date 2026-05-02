@@ -1,0 +1,15 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Sensitive config — never commit secrets!
+src/main/resources/application.yml
+
+# OS
+.DS_Store
