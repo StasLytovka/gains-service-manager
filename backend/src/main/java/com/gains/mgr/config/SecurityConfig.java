@@ -17,10 +17,9 @@ import java.util.List;
  * Spring Security configuration.
  *
  * @Configuration - marks this class as a source of @Bean definitions.
- *   Spring reads it at startup and registers the returned objects in the context.
- *
+ * Spring reads it at startup and registers the returned objects in the context.
  * @EnableWebSecurity - activates Spring Security's web support,
- *   replacing the default auto-configured security.
+ * replacing the default auto-configured security.
  */
 @Configuration
 @EnableWebSecurity
@@ -36,32 +35,32 @@ public class SecurityConfig {
      * Defines the security filter chain — the rules for every HTTP request.
      *
      * @Bean - tells Spring to register the returned object as a bean
-     *         so it can be injected elsewhere and managed by the framework.
+     * so it can be injected elsewhere and managed by the framework.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF (Cross-Site Request Forgery) protection.
-            // CSRF tokens are for session-based auth; JWT is stateless so not needed.
-            .csrf(csrf -> csrf.disable())
+                // Disable CSRF (Cross-Site Request Forgery) protection.
+                // CSRF tokens are for session-based auth; JWT is stateless so not needed.
+                .csrf(csrf -> csrf.disable())
 
-            // Apply CORS configuration (defined below)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Apply CORS configuration (defined below)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // Use STATELESS sessions — Spring will NOT create HTTP sessions.
-            // Each request must carry its own JWT token; no cookies, no server state.
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Use STATELESS sessions — Spring will NOT create HTTP sessions.
+                // Each request must carry its own JWT token; no cookies, no server state.
+                .sessionManagement(session ->
+                                           session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Define which endpoints require authentication
-            .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/auth/login").permitAll(); // login is public
-                auth.anyRequest().authenticated();                    // everything else requires a valid token
-            })
+                // Define which endpoints require authentication
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/api/auth/login").permitAll(); // login is public
+                    auth.anyRequest().authenticated();                    // everything else requires a valid token
+                })
 
-            // Register our JWT filter BEFORE Spring's default username/password filter.
-            // This ensures the token is validated before any other security checks.
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                // Register our JWT filter BEFORE Spring's default username/password filter.
+                // This ensures the token is validated before any other security checks.
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -69,7 +68,7 @@ public class SecurityConfig {
     /**
      * CORS (Cross-Origin Resource Sharing) configuration.
      *
-     * Browsers block requests from one origin (e.g. localhost:4200) to another
+     * <p>Browsers block requests from one origin (e.g. localhost:4200) to another
      * (e.g. localhost:8090) unless the server explicitly allows it.
      * This bean configures which origins, methods and headers are permitted.
      */

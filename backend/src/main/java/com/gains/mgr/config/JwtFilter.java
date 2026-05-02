@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -16,25 +17,25 @@ import java.util.Collections;
 /**
  * JWT authentication filter — intercepts every HTTP request and validates the token.
  *
- * OncePerRequestFilter is a Spring base class that guarantees the filter
+ * <p>OncePerRequestFilter is a Spring base class that guarantees the filter
  * runs exactly once per request (not twice in forward/include scenarios).
  *
- * Request flow:
- *   Browser sends: GET /api/services  with  Authorization: Bearer eyJ...
- *       |
- *       v
- *   JwtFilter.doFilterInternal()
- *       - reads the Authorization header
- *       - validates the JWT token
- *       - if valid: sets the authenticated user in SecurityContext
- *       |
- *       v
- *   Spring Security checks SecurityContext
- *       - user is authenticated → allow the request through
- *       - no user set → return 401 Unauthorized
- *       |
- *       v
- *   Controller method executes
+ * <p>Request flow:
+ * Browser sends: GET /api/services  with  Authorization: Bearer eyJ...
+ * |
+ * v
+ * JwtFilter.doFilterInternal()
+ * - reads the Authorization header
+ * - validates the JWT token
+ * - if valid: sets the authenticated user in SecurityContext
+ * |
+ * v
+ * Spring Security checks SecurityContext
+ * - user is authenticated → allow the request through
+ * - no user set → return 401 Unauthorized
+ * |
+ * v
+ * Controller method executes
  */
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -48,8 +49,8 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         // Read the Authorization header from the HTTP request
         String header = request.getHeader("Authorization");

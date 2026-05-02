@@ -11,12 +11,12 @@ import java.util.Date;
 /**
  * Utility class for JWT (JSON Web Token) operations.
  *
- * A JWT is a compact string with three parts: header.payload.signature
+ * <p>A JWT is a compact string with three parts: header.payload.signature
  * It stores user information on the client side without server-side sessions.
  * Example: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.xyz"
  *
  * @Component - Spring creates a single instance (Singleton) of this class
- *              and injects it wherever JwtUtil is required.
+ * and injects it wherever JwtUtil is required.
  */
 @Component
 public class JwtUtil {
