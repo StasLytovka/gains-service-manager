@@ -1,0 +1,52 @@
+@use '@angular/material' as mat;
+@include mat.core();
+
+$primary: mat.define-palette(mat.$indigo-palette, 700);
+$accent:  mat.define-palette(mat.$cyan-palette, A200);
+$warn:    mat.define-palette(mat.$red-palette);
+
+$dark-theme: mat.define-dark-theme((
+  color: (primary: $primary, accent: $accent, warn: $warn),
+  typography: mat.define-typography-config(),
+  density: 0
+));
+
+@include mat.all-component-themes($dark-theme);
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: #121212;
+  color: #e0e0e0;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.active   { background: #1b5e20; color: #a5d6a7; }
+  &.inactive { background: #37474f; color: #90a4ae; }
+  &.failed   { background: #b71c1c; color: #ef9a9a; }
+  &.unknown  { background: #4a4a4a; color: #bdbdbd; }
+  &.error    { background: #b71c1c; color: #ef9a9a; }
+}
+
+.log-viewer {
+  background: #0d0d0d;
+  color: #a5d6a7;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border: 1px solid #333;
+}

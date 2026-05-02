@@ -1,0 +1,159 @@
+<mat-toolbar color="primary" class="toolbar">
+  <mat-icon>settings</mat-icon>
+  <span class="title">Gains Service Manager</span>
+  <span class="spacer"></span>
+
+  <!-- PostgreSQL badge -->
+  <span class="pg-badge" [class]="'pg-' + postgres.status">
+    <mat-icon>storage</mat-icon>
+    PostgreSQL: {{ postgres.status }}
+  </span>
+
+  <button mat-icon-button (click)="refreshStatuses()" [disabled]="refreshing" matTooltip="Refresh">
+    <mat-icon [class.spinning]="refreshing">refresh</mat-icon>
+  </button>
+  <span class="username-label">{{ auth.getUsername() }}</span>
+  <button mat-icon-button (click)="auth.logout()" matTooltip="Sign out">
+    <mat-icon>logout</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="content">
+
+  <!-- Summary cards -->
+  <div class="summary-row">
+    <mat-card class="summary-card active-card">
+      <mat-card-content>
+        <div class="big-num">{{ activeCount() }}</div>
+        <div class="label">Active</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card total-card">
+      <mat-card-content>
+        <div class="big-num">{{ services.length }}</div>
+        <div class="label">Total Services</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card inactive-card">
+      <mat-card-content>
+        <div class="big-num">{{ inactiveCount() }}</div>
+        <div class="label">Stopped / Failed</div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Bulk actions -->
+    <div class="bulk-actions">
+      <button mat-raised-button color="primary"
+              (click)="startAll()" [disabled]="bulkLoading || loading">
+        <mat-icon>play_circle</mat-icon>
+        Start All
+      </button>
+      <button mat-raised-button color="warn"
+              (click)="stopAll()" [disabled]="bulkLoading || loading">
+        <mat-icon>stop_circle</mat-icon>
+        Stop All
+      </button>
+      <mat-spinner *ngIf="bulkLoading" diameter="28"></mat-spinner>
+    </div>
+  </div>
+
+  <!-- Services table -->
+  <mat-card class="table-card">
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-overlay">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Loading services...</p>
+      </div>
+
+      <mat-table [dataSource]="services" *ngIf="!loading">
+
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef>Tenant</mat-header-cell>
+          <mat-cell *matCellDef="let svc">
+            <strong>{{ svc.username }}</strong>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="serviceName">
+          <mat-header-cell *matHeaderCellDef>Service</mat-header-cell>
+          <mat-cell *matCellDef="let svc" class="svc-name">{{ svc.serviceName }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="port">
+          <mat-header-cell *matHeaderCellDef>Port</mat-header-cell>
+          <mat-cell *matCellDef="let svc">
+            <code>{{ svc.port }}</code>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let svc">
+            <span class="status-chip" [ngClass]="svc.status">
+              {{ svc.status }}
+              <span *ngIf="svc.subState && svc.subState !== svc.status">
+                ({{ svc.subState }})
+              </span>
+            </span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="pid">
+          <mat-header-cell *matHeaderCellDef>PID</mat-header-cell>
+          <mat-cell *matCellDef="let svc">
+            <code *ngIf="svc.pid !== '0'">{{ svc.pid }}</code>
+            <span *ngIf="svc.pid === '0'" class="muted">—</span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="since">
+          <mat-header-cell *matHeaderCellDef>Since</mat-header-cell>
+          <mat-cell *matCellDef="let svc" class="muted since-cell">
+            {{ formatSince(svc.since) }}
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+          <mat-cell *matCellDef="let svc">
+            <div class="action-btns">
+              <button mat-icon-button color="accent"
+                      [disabled]="svc['_loading'] || svc.status === 'active'"
+                      (click)="actionService(svc, 'start')"
+                      matTooltip="Start">
+                <mat-icon>play_arrow</mat-icon>
+              </button>
+              <button mat-icon-button color="warn"
+                      [disabled]="svc['_loading'] || svc.status !== 'active'"
+                      (click)="actionService(svc, 'stop')"
+                      matTooltip="Stop">
+                <mat-icon>stop</mat-icon>
+              </button>
+              <button mat-icon-button
+                      [disabled]="svc['_loading']"
+                      (click)="actionService(svc, 'restart')"
+                      matTooltip="Restart">
+                <mat-icon>restart_alt</mat-icon>
+              </button>
+              <button mat-icon-button
+                      (click)="openLogs(svc)"
+                      matTooltip="View logs">
+                <mat-icon>terminal</mat-icon>
+              </button>
+              <mat-spinner *ngIf="svc['_loading']" diameter="20"></mat-spinner>
+            </div>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let svc; columns: displayedColumns;"
+                 [class.row-active]="svc.status === 'active'"
+                 [class.row-failed]="svc.status === 'failed'">
+        </mat-row>
+
+      </mat-table>
+    </mat-card-content>
+  </mat-card>
+</div>

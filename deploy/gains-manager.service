@@ -1,0 +1,21 @@
+[Unit]
+Description=Gains Service Manager Web App
+After=network.target
+
+[Service]
+Type=simple
+User=slytovka
+WorkingDirectory=/opt/gains-service-manager/backend
+ExecStart=/usr/bin/java -jar /opt/gains-service-manager/backend/gains-service-manager.jar
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gains-manager
+
+# Allow reading /etc/shadow for PAM authentication
+# (or add slytovka to 'shadow' group: sudo usermod -aG shadow slytovka)
+SupplementaryGroups=shadow
+
+[Install]
+WantedBy=multi-user.target

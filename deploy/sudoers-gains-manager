@@ -1,0 +1,13 @@
+# /etc/sudoers.d/gains-manager
+# Allows slytovka to control systemd user services and read logs for all tenant users
+# without password prompt.
+# IMPORTANT: review and restrict to specific users if needed.
+
+# Allow running systemctl --user commands as any tenant user
+slytovka ALL=(archpoint,batteriesplus,cbcgroup,decksdirect,khov,ncs,paladin,sps,terumobct,vallen,vallenusa,zoll) NOPASSWD: /usr/bin/env
+
+# Allow checking PostgreSQL status
+slytovka ALL=(root) NOPASSWD: /usr/bin/systemctl status postgresql, /usr/bin/systemctl is-active postgresql
+
+# Allow reading user IDs (id command — typically no sudo needed, but just in case)
+# slytovka ALL=(root) NOPASSWD: /usr/bin/id
