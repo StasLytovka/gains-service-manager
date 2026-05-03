@@ -39,7 +39,7 @@ import { PgHealthResult } from '../models/service.model';
   `,
   styles: [`
     h2 { display: flex; align-items: center; gap: 8px; }
-    .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .score-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; justify-content: center; }
     .score { font-size: 40px; font-weight: 700; }
     .level { font-size: 16px; font-weight: 500; }
     .score-good, .level-good { color: #388e3c; }

@@ -30,11 +30,15 @@
   button { gap: 4px; }
 }
 
+.pg-health-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .pg-score {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  min-width: 32px;
-  text-align: center;
   &.score-good { color: #388e3c; }
   &.score-fair { color: #f9a825; }
   &.score-poor { color: #c62828; }
