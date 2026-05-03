@@ -31,7 +31,7 @@
       PostgreSQL: {{ postgres.status }}
     </span>
     <div class="pg-health-group" *ngIf="pgHealth">
-      <span class="pg-score" [class]="scoreColor">{{ pgHealth.score }}%</span>
+      <span class="pg-score" [class]="scoreColor">Health: {{ pgHealth.score }}%</span>
       <button mat-icon-button (click)="openPgHealth()" matTooltip="Health details">
         <mat-icon>info_outline</mat-icon>
       </button>

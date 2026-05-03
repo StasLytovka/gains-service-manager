@@ -39,8 +39,8 @@ import { PgHealthResult } from '../models/service.model';
   `,
   styles: [`
     h2 { display: flex; align-items: center; gap: 8px; }
-    .score-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; justify-content: center; }
-    .score { font-size: 40px; font-weight: 700; }
+    .score-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; justify-content: center; padding: 8px 0; }
+    .score { font-size: 40px; font-weight: 700; line-height: 1; }
     .level { font-size: 16px; font-weight: 500; }
     .score-good, .level-good { color: #388e3c; }
     .score-fair, .level-fair { color: #f9a825; }
