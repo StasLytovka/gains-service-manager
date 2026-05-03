@@ -6,13 +6,13 @@ import java.util.Map;
 /**
  * Data models (DTOs) for the service management layer.
  *
- * All classes use Java 17 'record' syntax.
+ *<p>All classes use Java 17 'record' syntax.
  * A record is an immutable data carrier — the compiler automatically generates:
  *   - a constructor with all fields
  *   - accessor methods (no "get" prefix): username(), serviceName(), etc.
  *   - equals(), hashCode(), toString()
  *
- * Records are ideal for DTOs because they hold data and nothing else.
+ *<p>Records are ideal for DTOs because they hold data and nothing else.
  */
 public class Models {
 
@@ -29,7 +29,7 @@ public class Models {
     /**
      * Full status of a single service — returned by GET /api/services.
      *
-     * Field descriptions match systemd 'show' property names.
+     *<p>Field descriptions match systemd 'show' property names.
      */
     public record ServiceStatusResult(
             String username,
@@ -79,7 +79,7 @@ public class Models {
     /**
      * Aggregated result of a bulk start-all or stop-all operation.
      *
-     * 'results' maps "<username>/<serviceName>" → ActionResult for each service.
+     *<p>'results' maps "<username>/<serviceName>" → ActionResult for each service.
      */
     public record BulkResult(
             Map<String, ActionResult> results,

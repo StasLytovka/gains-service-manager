@@ -11,7 +11,7 @@ import java.util.Map;
  * <p>>@RestController = @Controller + @ResponseBody
  * Methods return data (serialized to JSON) instead of view names.
  *
- * @RequestMapping("/api/auth") - all endpoints in this class are prefixed with /api/auth
+ * <p>{@code @RequestMapping("/api/auth")} - all endpoints in this class are prefixed with /api/auth
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -44,7 +44,7 @@ public class AuthController {
      * <p>Accepts username and password, verifies via PAM,
      * returns a JWT token on success.
      *
-     * @RequestBody - Spring automatically deserializes the JSON request body into LoginRequest
+     * <p>{@code @RequestBody} - Spring automatically deserializes the JSON request body into LoginRequest
      * * ResponseEntity<?> - lets us control the HTTP status code of the response
      * * 200 OK on success, 401 Unauthorized on failure
      */
@@ -68,12 +68,12 @@ public class AuthController {
     }
 
     /**
-     * GET /api/auth/me
+     * GET /api/auth/me.
      *
      * <p>Returns the currently authenticated user's name.
      * The "username" attribute is set by JwtFilter after token validation.
      *
-     * @RequestAttribute - reads an attribute set on HttpServletRequest
+     * <p>@code @RequestAttribute} - reads an attribute set on HttpServletRequest
      * (set by JwtFilter, not from the URL or body)
      */
     @GetMapping("/me")

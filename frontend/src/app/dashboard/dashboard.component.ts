@@ -7,6 +7,7 @@ import { AuthService } from '../services/auth.service';
 import { ThemeService } from '../services/theme.service';
 import { ServiceStatus, PostgresStatus } from '../models/service.model';
 import { LogDialogComponent } from './log-dialog.component';
+import { ConfirmDialogComponent } from './confirm-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,18 +20,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading       = true;
   bulkLoading   = false;
   refreshing    = false;
+  pgLoading     = false;
 
   displayedColumns = ['username', 'serviceName', 'port', 'status', 'pid', 'since', 'actions'];
 
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private api:    ApiService,
-    public  auth:   AuthService,
-    public  theme:  ThemeService,
-    private dialog: MatDialog,
-    private snack:  MatSnackBar
+    private readonly api:    ApiService,
+    public  readonly auth:   AuthService,
+    public  readonly theme:  ThemeService,
+    private readonly dialog: MatDialog,
+    private readonly snack:  MatSnackBar
   ) {}
+
+  get pgActive(): boolean {
+    return this.postgres.status === 'active';
+  }
 
   ngOnInit(): void {
     this.loadAll();
@@ -74,7 +80,83 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  // --- PostgreSQL controls ---
+
+  startPostgres(): void {
+    this.pgLoading = true;
+    this.api.startPostgres().subscribe({
+      next: res => {
+        this.pgLoading = false;
+        this.snack.open(
+          res.success ? 'PostgreSQL started' : res.message,
+          'Close', { duration: 3000 }
+        );
+        this.api.getPostgresStatus().subscribe(pg => this.postgres = pg);
+      },
+      error: () => {
+        this.pgLoading = false;
+        this.snack.open('Failed to start PostgreSQL', 'Close', { duration: 4000 });
+      }
+    });
+  }
+
+  stopPostgres(): void {
+    const running = this.activeCount();
+    if (running > 0) {
+      const ref = this.dialog.open(ConfirmDialogComponent, {
+        width: '440px',
+        data: {
+          title: 'Stop PostgreSQL?',
+          message: `${running} service(s) are currently running and depend on PostgreSQL. ` +
+                   `They will be stopped first. Continue?`,
+          confirmText: 'Stop All & PostgreSQL',
+          confirmColor: 'warn'
+        }
+      });
+      ref.afterClosed().subscribe(confirmed => {
+        if (!confirmed) return;
+        this.pgLoading = true;
+        this.bulkLoading = true;
+        this.api.stopAll().subscribe({
+          next: () => {
+            this.bulkLoading = false;
+            this.doStopPostgres('All services & PostgreSQL stopped');
+          },
+          error: () => {
+            this.bulkLoading = false;
+            this.pgLoading = false;
+            this.snack.open('Failed to stop services', 'Close', { duration: 4000 });
+          }
+        });
+      });
+    } else {
+      this.pgLoading = true;
+      this.doStopPostgres('PostgreSQL stopped');
+    }
+  }
+
+  private doStopPostgres(successMsg: string): void {
+    this.api.stopPostgres().subscribe({
+      next: res => {
+        this.pgLoading = false;
+        this.snack.open(res.success ? successMsg : res.message, 'Close', { duration: 4000 });
+        this.refreshStatuses();
+      },
+      error: () => {
+        this.pgLoading = false;
+        this.snack.open('Failed to stop PostgreSQL', 'Close', { duration: 4000 });
+        this.refreshStatuses();
+      }
+    });
+  }
+
+  // --- Service actions ---
+
   actionService(svc: ServiceStatus, action: 'start' | 'stop' | 'restart'): void {
+    if (action === 'start' && !this.pgActive) {
+      this.snack.open('Cannot start service: PostgreSQL is not running', 'Close', { duration: 4000 });
+      return;
+    }
     (svc as any)['_loading'] = true;
     const obs = action === 'start'   ? this.api.start(svc.username, svc.serviceName)
               : action === 'stop'    ? this.api.stop(svc.username, svc.serviceName)
@@ -116,7 +198,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  // --- Bulk actions ---
+
   startAll(): void {
+    if (!this.pgActive) {
+      this.snack.open('Cannot start services: PostgreSQL is not running', 'Close', { duration: 4000 });
+      return;
+    }
     this.bulkLoading = true;
     this.api.startAll().subscribe({
       next: res => {

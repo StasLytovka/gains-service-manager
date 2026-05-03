@@ -48,4 +48,12 @@ export class ApiService {
   getPostgresStatus(): Observable<PostgresStatus> {
     return this.http.get<PostgresStatus>(`${this.base}/postgres`);
   }
+
+  startPostgres(): Observable<ActionResult> {
+    return this.http.post<ActionResult>(`${this.base}/postgres/start`, {});
+  }
+
+  stopPostgres(): Observable<ActionResult> {
+    return this.http.post<ActionResult>(`${this.base}/postgres/stop`, {});
+  }
 }

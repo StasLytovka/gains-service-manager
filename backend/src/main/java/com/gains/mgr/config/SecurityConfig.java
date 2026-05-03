@@ -16,9 +16,9 @@ import java.util.List;
 /**
  * Spring Security configuration.
  *
- * @Configuration - marks this class as a source of @Bean definitions.
+ * <p>{@code @Configuration} - marks this class as a source of @Bean definitions.
  * Spring reads it at startup and registers the returned objects in the context.
- * @EnableWebSecurity - activates Spring Security's web support,
+ * {@code @EnableWebSecurity} - activates Spring Security's web support,
  * replacing the default auto-configured security.
  */
 @Configuration
@@ -34,7 +34,7 @@ public class SecurityConfig {
     /**
      * Defines the security filter chain — the rules for every HTTP request.
      *
-     * @Bean - tells Spring to register the returned object as a bean
+     * <p>{@code @Bean} - tells Spring to register the returned object as a bean
      * so it can be injected elsewhere and managed by the framework.
      */
     @Bean

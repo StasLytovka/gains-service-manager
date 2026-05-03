@@ -24,6 +24,7 @@ import { AppComponent }          from './app.component';
 import { LoginComponent }        from './login/login.component';
 import { DashboardComponent }    from './dashboard/dashboard.component';
 import { LogDialogComponent }    from './dashboard/log-dialog.component';
+import { ConfirmDialogComponent } from './dashboard/confirm-dialog.component';
 import { JwtInterceptor }        from './services/jwt.interceptor';
 import { ReplacePipe }           from './pipes/replace.pipe';
 
@@ -33,6 +34,7 @@ import { ReplacePipe }           from './pipes/replace.pipe';
     LoginComponent,
     DashboardComponent,
     LogDialogComponent,
+    ConfirmDialogComponent,
     ReplacePipe
   ],
   imports: [

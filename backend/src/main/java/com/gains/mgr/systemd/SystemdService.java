@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class SystemdService {
 
-    private static final Logger log = LoggerFactory.getLogger(SystemdService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemdService.class);
 
     /**
      * Static fallback map used when filesystem discovery fails.
@@ -160,6 +160,30 @@ public class SystemdService {
         }
     }
 
+    public ActionResult startPostgres() {
+        try {
+            LOGGER.info("ACTION [START] PostgreSQL (system service)");
+            String output = exec(List.of("sudo", "systemctl", "start", "postgresql"), 15);
+            LOGGER.info("ACTION [START] PostgreSQL COMPLETED");
+            return new ActionResult(true, "PostgreSQL start OK", output);
+        } catch (Exception e) {
+            LOGGER.error("ACTION [START] PostgreSQL FAILED: {}", e.getMessage());
+            return new ActionResult(false, "Failed to start PostgreSQL: " + e.getMessage());
+        }
+    }
+
+    public ActionResult stopPostgres() {
+        try {
+            LOGGER.info("ACTION [STOP] PostgreSQL (system service)");
+            String output = exec(List.of("sudo", "systemctl", "stop", "postgresql"), 15);
+            LOGGER.info("ACTION [STOP] PostgreSQL COMPLETED");
+            return new ActionResult(true, "PostgreSQL stop OK", output);
+        } catch (Exception e) {
+            LOGGER.error("ACTION [STOP] PostgreSQL FAILED: {}", e.getMessage());
+            return new ActionResult(false, "Failed to stop PostgreSQL: " + e.getMessage());
+        }
+    }
+
     /**
      * Discovers all Gains services by scanning the filesystem.
      * Falls back to the static map if the scan fails or finds nothing.
@@ -213,12 +237,12 @@ public class SystemdService {
                 }
             }
         } catch (Exception e) {
-            log.warn("Service auto-discovery failed, using static map: {}", e.getMessage());
+            LOGGER.warn("Service auto-discovery failed, using static map: {}", e.getMessage());
         }
 
         // Fall back to static map if discovery found nothing
         if (discovered.isEmpty()) {
-            log.info("Using static service map ({} services)", STATIC_SERVICE_MAP.size());
+            LOGGER.info("Using static service map ({} services)", STATIC_SERVICE_MAP.size());
             STATIC_SERVICE_MAP.forEach((user, svc) ->
                                                discovered.add(new ServiceInfo(user, svc, portFromServiceName(svc))));
         }
@@ -238,7 +262,7 @@ public class SystemdService {
         }
         try {
             // Log the exact command being executed
-            log.info(
+            LOGGER.info(
                     "ACTION [{}] user={} service={} uid={} command: sudo -u {} env XDG_RUNTIME_DIR=/run/user/{}"
                             + " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{}/bus systemctl --user {} {}",
                     action.toUpperCase(),
@@ -254,7 +278,7 @@ public class SystemdService {
 
             String output = runUserSystemctl(username, uid, List.of(action, serviceName));
 
-            log.info(
+            LOGGER.info(
                     "ACTION [{}] COMPLETED user={} service={} output={}",
                     action.toUpperCase(), username, serviceName,
                     output.isBlank() ? "OK" : output.trim()
@@ -262,7 +286,7 @@ public class SystemdService {
 
             return new ActionResult(true, action + " OK for " + serviceName, output);
         } catch (Exception e) {
-            log.error(
+            LOGGER.error(
                     "ACTION [{}] FAILED user={} service={} error={}",
                     action.toUpperCase(), username, serviceName, e.getMessage()
             );
@@ -364,7 +388,7 @@ public class SystemdService {
      * @throws RuntimeException if the process times out
      */
     private String exec(List<String> cmd, long timeout) {
-        log.debug("exec: {}", String.join(" ", cmd));
+        LOGGER.debug("exec: {}", String.join(" ", cmd));
         try {
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.redirectErrorStream(true);   // merge stderr into stdout

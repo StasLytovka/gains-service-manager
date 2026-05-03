@@ -10,11 +10,28 @@
   <span class="title">Service Manager</span>
   <span class="spacer"></span>
 
-  <!-- PostgreSQL badge -->
-  <span class="pg-badge" [class]="'pg-' + postgres.status">
-    <mat-icon>storage</mat-icon>
-    PostgreSQL: {{ postgres.status }}
-  </span>
+  <!-- PostgreSQL controls -->
+  <div class="pg-controls">
+    <span class="pg-badge" [class]="'pg-' + postgres.status">
+      <mat-icon>storage</mat-icon>
+      PostgreSQL: {{ postgres.status }}
+    </span>
+    <button mat-icon-button
+            *ngIf="!pgActive"
+            [disabled]="pgLoading"
+            (click)="startPostgres()"
+            matTooltip="Start PostgreSQL">
+      <mat-icon>play_arrow</mat-icon>
+    </button>
+    <button mat-icon-button
+            *ngIf="pgActive"
+            [disabled]="pgLoading"
+            (click)="stopPostgres()"
+            matTooltip="Stop PostgreSQL">
+      <mat-icon>stop</mat-icon>
+    </button>
+    <mat-spinner *ngIf="pgLoading" diameter="18"></mat-spinner>
+  </div>
 
   <button mat-icon-button (click)="refreshStatuses()" [disabled]="refreshing" matTooltip="Refresh">
     <mat-icon [class.spinning]="refreshing">refresh</mat-icon>
@@ -56,7 +73,8 @@
     <!-- Bulk actions -->
     <div class="bulk-actions">
       <button mat-raised-button color="primary"
-              (click)="startAll()" [disabled]="bulkLoading || loading">
+              (click)="startAll()" [disabled]="bulkLoading || loading || !pgActive"
+              [matTooltip]="pgActive ? 'Start all services' : 'Start PostgreSQL first'">
         <mat-icon>play_circle</mat-icon>
         Start All
       </button>
@@ -130,9 +148,9 @@
           <mat-cell *matCellDef="let svc">
             <div class="action-btns">
               <button mat-icon-button color="accent"
-                      [disabled]="svc['_loading'] || svc.status === 'active'"
+                      [disabled]="svc['_loading'] || svc.status === 'active' || !pgActive"
                       (click)="actionService(svc, 'start')"
-                      matTooltip="Start">
+                      [matTooltip]="pgActive ? 'Start' : 'Start PostgreSQL first'">
                 <mat-icon>play_arrow</mat-icon>
               </button>
               <button mat-icon-button color="warn"

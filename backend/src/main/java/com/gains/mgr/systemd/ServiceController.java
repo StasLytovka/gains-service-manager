@@ -9,10 +9,10 @@ import java.util.List;
 /**
  * REST controller exposing systemd service management endpoints.
  *
- * All endpoints require a valid JWT token (enforced by JwtFilter + SecurityConfig).
+ *<p>All endpoints require a valid JWT token (enforced by JwtFilter + SecurityConfig).
  * The Angular frontend calls these endpoints from the dashboard.
  *
- * Base path: /api/services
+ *<p>Base path: /api/services
  */
 @RestController
 @RequestMapping("/api/services")
@@ -40,7 +40,7 @@ public class ServiceController {
      * Returns the status of one specific service.
      * Called after start/stop/restart to refresh a single row.
      *
-     * @PathVariable - extracts {username} and {serviceName} from the URL path
+     *<p>{@code @PathVariable} - extracts {username} and {serviceName} from the URL path
      */
     @GetMapping("/{username}/{serviceName}/status")
     public ResponseEntity<ServiceStatusResult> getStatus(
@@ -86,7 +86,7 @@ public class ServiceController {
      * GET /api/services/{username}/{serviceName}/logs?lines=50
      * Returns the last N lines from journalctl for a service.
      *
-     * @RequestParam - reads the "lines" query parameter from the URL.
+     *<p>{@code @RequestParam} - reads the "lines" query parameter from the URL.
      *   defaultValue = "50" means ?lines=50 is assumed if not provided.
      */
     @GetMapping("/{username}/{serviceName}/logs")
@@ -124,5 +124,15 @@ public class ServiceController {
     @GetMapping("/postgres")
     public ResponseEntity<PostgresStatus> getPostgresStatus() {
         return ResponseEntity.ok(systemdService.getPostgresStatus());
+    }
+
+    @PostMapping("/postgres/start")
+    public ResponseEntity<ActionResult> startPostgres() {
+        return ResponseEntity.ok(systemdService.startPostgres());
+    }
+
+    @PostMapping("/postgres/stop")
+    public ResponseEntity<ActionResult> stopPostgres() {
+        return ResponseEntity.ok(systemdService.stopPostgres());
     }
 }

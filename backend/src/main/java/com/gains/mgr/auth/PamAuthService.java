@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
  * The process user must belong to the 'shadow' group to read /etc/shadow:
  * sudo usermod -aG shadow <service_user>
  *
- * @Service - Spring stereotype for the service layer (business logic).
+ * <p>{@code @Service} - Spring stereotype for the service layer (business logic).
  * Functionally equivalent to @Component, but semantically clearer.
  */
 @Service
@@ -27,7 +27,7 @@ public class PamAuthService {
 
     // Standard Java logging via SLF4J facade
     // Log messages appear in journalctl -u gains-manager
-    private static final Logger log = LoggerFactory.getLogger(PamAuthService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PamAuthService.class);
 
     /**
      * Authenticates a user against the Linux PAM stack.
@@ -60,18 +60,18 @@ public class PamAuthService {
             String sudoList = new String(proc.getInputStream().readAllBytes());
 
             if (sudoList.contains("not allowed to run sudo")) {
-                log.warn("Access denied for {} — no sudo rights", username);
+                LOGGER.warn("Access denied for {} — no sudo rights", username);
                 return false;
             }
 
-            log.info("PAM auth SUCCESS for user: {}", username);
+            LOGGER.info("PAM auth SUCCESS for user: {}", username);
             return true;
 
         } catch (PAMException e) {
-            log.warn("PAM auth FAILED for user: {} — {}", username, e.getMessage());
+            LOGGER.warn("PAM auth FAILED for user: {} — {}", username, e.getMessage());
             return false;
         } catch (Exception e) {
-            log.error("PAM system error for user {}: {}", username, e.getMessage());
+            LOGGER.error("PAM system error for user {}: {}", username, e.getMessage());
             return false;
         }
 

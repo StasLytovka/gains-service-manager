@@ -15,7 +15,7 @@ import java.util.Date;
  * It stores user information on the client side without server-side sessions.
  * Example: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiJ9.xyz"
  *
- * @Component - Spring creates a single instance (Singleton) of this class
+ * <p>{@code @Component} - Spring creates a single instance (Singleton) of this class
  * and injects it wherever JwtUtil is required.
  */
 @Component
