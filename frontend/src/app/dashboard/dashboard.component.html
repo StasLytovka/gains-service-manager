@@ -31,16 +31,16 @@
       PostgreSQL: {{ postgres.status }}
     </span>
     <div class="pg-actions">
-      <button mat-raised-button color="primary"
+      <button mat-flat-button color="primary"
               [disabled]="pgLoading || pgActive"
               (click)="startPostgres()">
-        <mat-icon>play_arrow</mat-icon>
+        <mat-icon>play_circle</mat-icon>
         Start PG
       </button>
-      <button mat-raised-button color="warn"
+      <button mat-flat-button color="warn"
               [disabled]="pgLoading || !pgActive"
               (click)="stopPostgres()">
-        <mat-icon>stop</mat-icon>
+        <mat-icon>stop_circle</mat-icon>
         Stop PG
       </button>
       <mat-spinner *ngIf="pgLoading" diameter="22"></mat-spinner>
@@ -71,14 +71,16 @@
     </mat-card>
 
     <div class="bulk-actions">
-      <button mat-raised-button color="primary"
-              (click)="startAll()" [disabled]="bulkLoading || loading || !pgActive"
-              [matTooltip]="pgActive ? 'Start all services' : 'Start PostgreSQL first'">
+      <button mat-flat-button color="primary"
+              (click)="startAll()"
+              [disabled]="bulkLoading || loading || !pgActive || allActive"
+              [matTooltip]="!pgActive ? 'Start PostgreSQL first' : allActive ? 'All services already running' : 'Start all services'">
         <mat-icon>play_circle</mat-icon>
         Start All
       </button>
-      <button mat-raised-button color="warn"
-              (click)="stopAll()" [disabled]="bulkLoading || loading">
+      <button mat-flat-button color="warn"
+              (click)="stopAll()"
+              [disabled]="bulkLoading || loading || activeCount() === 0">
         <mat-icon>stop_circle</mat-icon>
         Stop All
       </button>

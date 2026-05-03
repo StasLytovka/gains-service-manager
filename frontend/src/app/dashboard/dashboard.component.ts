@@ -248,6 +248,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   activeCount(): number   { return this.services.filter(s => s.status === 'active').length; }
   inactiveCount(): number { return this.services.filter(s => s.status !== 'active' && s.status !== 'error').length; }
 
+  get allActive(): boolean {
+    return this.services.length > 0 && this.activeCount() === this.services.length;
+  }
+
   formatSince(since: string): string {
     if (!since) return '';
     return since.substring(0, 19).replace('T', ' ');
