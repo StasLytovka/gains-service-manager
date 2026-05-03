@@ -1,6 +1,6 @@
 package com.gains.mgr.systemd;
 
-import com.gains.mgr.systemd.Models.ActionResult;
+import com.gains.mgr.systemd.ServiceModels.ActionResult;
 import com.gains.mgr.systemd.PostgresModels.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

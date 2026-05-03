@@ -1,6 +1,6 @@
 package com.gains.mgr.systemd;
 
-import com.gains.mgr.systemd.Models.*;
+import com.gains.mgr.systemd.ServiceModels.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

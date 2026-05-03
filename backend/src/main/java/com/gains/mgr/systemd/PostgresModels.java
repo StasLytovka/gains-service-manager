@@ -17,11 +17,13 @@ public class PostgresModels {
             String name,
             String value,
             String status
-    ) {}
+    ) {
+    }
 
     public record PgHealthResult(
             int score,
             String level,
             List<PgHealthMetric> metrics
-    ) {}
+    ) {
+    }
 }

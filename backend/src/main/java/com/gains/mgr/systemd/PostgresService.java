@@ -1,6 +1,6 @@
 package com.gains.mgr.systemd;
 
-import com.gains.mgr.systemd.Models.ActionResult;
+import com.gains.mgr.systemd.ServiceModels.ActionResult;
 import com.gains.mgr.systemd.PostgresModels.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -3,13 +3,14 @@ package com.gains.mgr.systemd;
 import java.util.List;
 import java.util.Map;
 
-public class Models {
+public class ServiceModels {
 
     public record ServiceInfo(
             String username,
             String serviceName,
             int port
-    ) {}
+    ) {
+    }
 
     public record ServiceStatusResult(
             String username,
@@ -19,7 +20,8 @@ public class Models {
             String subState,
             String pid,
             String since
-    ) {}
+    ) {
+    }
 
     public record ActionResult(
             boolean success,
@@ -35,11 +37,13 @@ public class Models {
             String username,
             String serviceName,
             List<String> lines
-    ) {}
+    ) {
+    }
 
     public record BulkResult(
             Map<String, ActionResult> results,
             int successCount,
             int failCount
-    ) {}
+    ) {
+    }
 }

@@ -1,6 +1,6 @@
 package com.gains.mgr.systemd;
 
-import com.gains.mgr.systemd.Models.*;
+import com.gains.mgr.systemd.ServiceModels.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -124,12 +124,16 @@ public class SystemdService {
             );
 
             for (String path : output.split("\n")) {
-                if (path.isBlank()) continue;
+                if (path.isBlank()) {
+                    continue;
+                }
 
                 File svcFile = new File(path.trim());
                 String svcName = svcFile.getName();
 
-                if (svcName.contains("8080")) continue;
+                if (svcName.contains("8080")) {
+                    continue;
+                }
 
                 String username = svcFile
                         .getParentFile().getParentFile()
@@ -151,7 +155,7 @@ public class SystemdService {
         if (discovered.isEmpty()) {
             LOGGER.info("Using static service map ({} services)", STATIC_SERVICE_MAP.size());
             STATIC_SERVICE_MAP.forEach((user, svc) ->
-                    discovered.add(new ServiceInfo(user, svc, portFromServiceName(svc))));
+                                               discovered.add(new ServiceInfo(user, svc, portFromServiceName(svc))));
         }
 
         discovered.sort(Comparator.comparingInt(ServiceInfo::port));
@@ -169,8 +173,10 @@ public class SystemdService {
             LOGGER.info("ACTION [{}] COMPLETED user={} service={}", action.toUpperCase(), username, serviceName);
             return new ActionResult(true, action + " OK for " + serviceName, output);
         } catch (Exception e) {
-            LOGGER.error("ACTION [{}] FAILED user={} service={} error={}",
-                    action.toUpperCase(), username, serviceName, e.getMessage());
+            LOGGER.error(
+                    "ACTION [{}] FAILED user={} service={} error={}",
+                    action.toUpperCase(), username, serviceName, e.getMessage()
+            );
             return new ActionResult(false, e.getMessage());
         }
     }
