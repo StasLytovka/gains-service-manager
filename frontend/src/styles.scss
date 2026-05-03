@@ -1,8 +1,33 @@
 @use '@angular/material' as mat;
 @include mat.core();
 
-$primary: mat.define-palette(mat.$indigo-palette, 700);
-$accent:  mat.define-palette(mat.$cyan-palette, A200);
+// --- GAINS custom palettes ---
+$gains-green: (
+  50:  #f2f5e7, 100: #dfe6c3, 200: #c9d69b, 300: #b3c573, 400: #a3b955,
+  500: #92AD38, 600: #8aa632, 700: #7f9a2b, 800: #758f24, 900: #637617,
+  A100: #d4f78a, A200: #c2f35c, A400: #aee82e, A700: #a5e014,
+  contrast: (
+    50: rgba(0,0,0,.87), 100: rgba(0,0,0,.87), 200: rgba(0,0,0,.87),
+    300: rgba(0,0,0,.87), 400: rgba(0,0,0,.87), 500: #fff, 600: #fff,
+    700: #fff, 800: #fff, 900: #fff,
+    A100: rgba(0,0,0,.87), A200: rgba(0,0,0,.87), A400: rgba(0,0,0,.87), A700: rgba(0,0,0,.87),
+  )
+);
+
+$gains-orange: (
+  50:  #fef0eb, 100: #fcd8cc, 200: #f9bfab, 300: #f6a58a, 400: #f48071,
+  500: #f15a24, 600: #e05220, 700: #cc481b, 800: #b93f17, 900: #932e0f,
+  A100: #ffc9b5, A200: #ffa084, A400: #ff7752, A700: #ff6339,
+  contrast: (
+    50: rgba(0,0,0,.87), 100: rgba(0,0,0,.87), 200: rgba(0,0,0,.87),
+    300: rgba(0,0,0,.87), 400: #fff, 500: #fff, 600: #fff,
+    700: #fff, 800: #fff, 900: #fff,
+    A100: rgba(0,0,0,.87), A200: rgba(0,0,0,.87), A400: #fff, A700: #fff,
+  )
+);
+
+$primary: mat.define-palette($gains-green, 500);
+$accent:  mat.define-palette($gains-orange, 500);
 $warn:    mat.define-palette(mat.$red-palette);
 
 $dark-theme: mat.define-dark-theme((
@@ -11,16 +36,92 @@ $dark-theme: mat.define-dark-theme((
   density: 0
 ));
 
+$light-theme: mat.define-light-theme((
+  color: (primary: $primary, accent: $accent, warn: $warn),
+  typography: mat.define-typography-config(),
+  density: 0
+));
+
+// Dark theme — default
 @include mat.all-component-themes($dark-theme);
 
+// Light theme override
+.gains-light {
+  @include mat.all-component-colors($light-theme);
+}
+
+// --- CSS custom properties ---
+.gains-dark {
+  --gains-bg:           #1f2329;
+  --gains-surface:      #2a3038;
+  --gains-text:         #e6e8eb;
+  --gains-text-muted:   #8a95a3;
+  --gains-border:       #4a5564;
+  --gains-primary:      #9bbf3f;
+  --gains-primary-hover:#89aa35;
+  --gains-accent:       #f15a24;
+  --gains-error-bg:     #4f1f1f;
+  --gains-error-border: #8e3c3c;
+  --gains-error-text:   #ffb3b3;
+  --gains-link:         #63b4d8;
+  --gains-input-bg:     transparent;
+  --gains-input-border: #4a5564;
+  --gains-input-placeholder: #8a95a3;
+  --gains-focus-ring:   rgba(155,191,63,.25);
+  --gains-card-shadow:  0 10px 28px rgba(0,0,0,.45);
+  --gains-logo-text:    #e6e8eb;
+  --gains-toolbar-bg:   #2a3038;
+  --gains-code-bg:      rgba(255,255,255,.08);
+  --gains-header-color: #9bbf3f;
+  --gains-row-hover:    rgba(255,255,255,.04);
+  --gains-badge-bg:     rgba(255,255,255,.1);
+  --gains-card-active:  #a5d6a7;
+  --gains-card-inactive:#ef9a9a;
+  --gains-card-total:   #f6a58a;
+  --gains-divider:      #3a4048;
+}
+
+.gains-light {
+  --gains-bg:           #e9eaec;
+  --gains-surface:      #ffffff;
+  --gains-text:         #4a4a4f;
+  --gains-text-muted:   #6e7178;
+  --gains-border:       #d0d3d8;
+  --gains-primary:      #93ad3c;
+  --gains-primary-hover:#7f9834;
+  --gains-accent:       #f15a24;
+  --gains-error-bg:     #fdecec;
+  --gains-error-border: #f4b4b1;
+  --gains-error-text:   #b42318;
+  --gains-link:         #1f86b5;
+  --gains-input-bg:     #fff;
+  --gains-input-border: #b8bcc2;
+  --gains-input-placeholder: #a6a9ae;
+  --gains-focus-ring:   rgba(147,173,60,.2);
+  --gains-card-shadow:  0 10px 28px rgba(26,43,68,.12);
+  --gains-logo-text:    #3f3f3f;
+  --gains-toolbar-bg:   #ffffff;
+  --gains-code-bg:      rgba(0,0,0,.06);
+  --gains-header-color: #617425;
+  --gains-row-hover:    rgba(0,0,0,.03);
+  --gains-badge-bg:     rgba(0,0,0,.08);
+  --gains-card-active:  #558b2f;
+  --gains-card-inactive:#c62828;
+  --gains-card-total:   #cc481b;
+  --gains-divider:      #e0e2e5;
+}
+
+// --- Global styles ---
 html, body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
-  background: #121212;
-  color: #e0e0e0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background: var(--gains-bg);
+  color: var(--gains-text);
+  transition: background .25s, color .25s;
 }
 
+// --- Status chips (theme-independent) ---
 .status-chip {
   display: inline-block;
   padding: 3px 10px;
@@ -37,6 +138,7 @@ html, body {
   &.error    { background: #b71c1c; color: #ef9a9a; }
 }
 
+// --- Log viewer (always dark terminal style) ---
 .log-viewer {
   background: #0d0d0d;
   color: #a5d6a7;

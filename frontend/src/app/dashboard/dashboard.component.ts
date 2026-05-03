@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { ThemeService } from '../services/theme.service';
 import { ServiceStatus, PostgresStatus } from '../models/service.model';
 import { LogDialogComponent } from './log-dialog.component';
 
@@ -26,13 +27,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private api:    ApiService,
     public  auth:   AuthService,
+    public  theme:  ThemeService,
     private dialog: MatDialog,
     private snack:  MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.loadAll();
-    // Auto-refresh every 30s
     interval(30_000).pipe(takeUntil(this.destroy$))
       .subscribe(() => this.refreshStatuses());
   }
@@ -87,7 +88,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           'Close',
           { duration: 3000, panelClass: res.success ? [] : ['snack-error'] }
         );
-        // Refresh this single service status after a short delay
         setTimeout(() => this.refreshSingle(svc), 2000);
       },
       error: err => {
