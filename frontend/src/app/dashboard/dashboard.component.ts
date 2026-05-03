@@ -81,7 +81,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       error: () => { this.refreshing = false; }
     });
     this.api.getPostgresStatus().subscribe({
-      next: pg => this.postgres = pg
+      next: pg => {
+        this.postgres = pg;
+        if (pg.status === 'active') this.loadPgHealth();
+      }
     });
   }
 
