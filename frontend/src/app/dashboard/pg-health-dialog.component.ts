@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { PgHealthResult } from '../models/service.model';
+import { PgHealthResult, PgHealthMetric } from '../models/service.model';
 
 @Component({
   selector: 'app-pg-health-dialog',
@@ -11,10 +11,12 @@ import { PgHealthResult } from '../models/service.model';
     </h2>
     <mat-dialog-content>
       <div class="score-row">
-        <span class="score" [class]="'score-' + data.level.toLowerCase()">{{ data.score }}</span>
+        <span class="score" [class]="'score-' + data.level.toLowerCase()">{{ data.score }}%</span>
         <span class="level" [class]="'level-' + data.level.toLowerCase()">{{ data.level }}</span>
       </div>
-      <mat-table [dataSource]="data.metrics" class="health-table">
+
+      <h3 class="section-title">System Metrics</h3>
+      <mat-table [dataSource]="systemMetrics" class="health-table">
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef>Metric</mat-header-cell>
           <mat-cell *matCellDef="let m">{{ m.name }}</mat-cell>
@@ -29,8 +31,28 @@ import { PgHealthResult } from '../models/service.model';
             <span class="status-tag" [class]="'st-' + m.status.toLowerCase()">{{ m.status }}</span>
           </mat-cell>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="['name', 'value', 'status']"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: ['name', 'value', 'status']"></mat-row>
+        <mat-header-row *matHeaderRowDef="cols"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: cols"></mat-row>
+      </mat-table>
+
+      <h3 class="section-title" *ngIf="dbMetrics.length">Cache Hit per Database</h3>
+      <mat-table [dataSource]="dbMetrics" class="health-table" *ngIf="dbMetrics.length">
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef>Database</mat-header-cell>
+          <mat-cell *matCellDef="let m">{{ m.name.replace('Cache: ', '') }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="value">
+          <mat-header-cell *matHeaderCellDef>Hit Ratio</mat-header-cell>
+          <mat-cell *matCellDef="let m"><code>{{ m.value }}</code></mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let m">
+            <span class="status-tag" [class]="'st-' + m.status.toLowerCase()">{{ m.status }}</span>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="cols"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: cols"></mat-row>
       </mat-table>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -45,7 +67,9 @@ import { PgHealthResult } from '../models/service.model';
     .score-good, .level-good { color: #388e3c; }
     .score-fair, .level-fair { color: #f9a825; }
     .score-poor, .level-poor { color: #c62828; }
+    .section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin: 16px 0 8px; }
     .health-table { width: 100%; }
+    mat-dialog-content { max-height: 70vh; }
     code { font-family: monospace; }
     .status-tag { padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 500; text-transform: uppercase; }
     .st-ok { background: #1b5e20; color: #a5d6a7; }
@@ -56,5 +80,12 @@ import { PgHealthResult } from '../models/service.model';
   `]
 })
 export class PgHealthDialogComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public readonly data: PgHealthResult) {}
+  cols = ['name', 'value', 'status'];
+  systemMetrics: PgHealthMetric[];
+  dbMetrics: PgHealthMetric[];
+
+  constructor(@Inject(MAT_DIALOG_DATA) public readonly data: PgHealthResult) {
+    this.systemMetrics = data.metrics.filter(m => !m.name.startsWith('Cache: '));
+    this.dbMetrics = data.metrics.filter(m => m.name.startsWith('Cache: '));
+  }
 }

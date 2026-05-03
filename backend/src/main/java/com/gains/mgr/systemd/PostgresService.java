@@ -69,10 +69,9 @@ public class PostgresService {
                 int active = Integer.parseInt(connParts[0].trim());
                 int max = Integer.parseInt(connParts[1].trim());
                 double pct = (double) active / max * 100;
-                String status = pct < 70 ? "OK" : pct < 90 ? "Warning" : "Critical";
-                int s = pct < 70 ? 100 : pct < 90 ? 60 : 20;
-                metrics.add(new PgHealthMetric("Connections", active + " / " + max, status));
-                totalScore += s;
+                String[] eval = evaluate(pct, 70, 90);
+                metrics.add(new PgHealthMetric("Connections", active + " / " + max, eval[0]));
+                totalScore += Integer.parseInt(eval[1]);
                 checks++;
             }
         } catch (Exception e) {
@@ -86,10 +85,9 @@ public class PostgresService {
             ).trim();
             if (!hitRatio.isEmpty() && !hitRatio.contains("null")) {
                 double ratio = Double.parseDouble(hitRatio);
-                String status = ratio >= 99 ? "OK" : ratio >= 95 ? "Warning" : "Critical";
-                int s = ratio >= 99 ? 100 : ratio >= 95 ? 60 : 20;
-                metrics.add(new PgHealthMetric("Cache Hit Ratio", hitRatio + "%", status));
-                totalScore += s;
+                String[] eval = evaluateReverse(ratio, 95, 90);
+                metrics.add(new PgHealthMetric("Cache Hit Ratio", hitRatio + "%", eval[0]));
+                totalScore += Integer.parseInt(eval[1]);
                 checks++;
             }
         } catch (Exception e) {
@@ -101,10 +99,9 @@ public class PostgresService {
                 "SELECT count(*) FROM pg_stat_activity WHERE state = 'active' AND pid <> pg_backend_pid()"
             ).trim();
             int aq = Integer.parseInt(activeQ);
-            String status = aq < 20 ? "OK" : aq < 50 ? "Warning" : "Critical";
-            int s = aq < 20 ? 100 : aq < 50 ? 60 : 20;
-            metrics.add(new PgHealthMetric("Active Queries", String.valueOf(aq), status));
-            totalScore += s;
+            String[] eval = evaluate(aq, 20, 50);
+            metrics.add(new PgHealthMetric("Active Queries", String.valueOf(aq), eval[0]));
+            totalScore += Integer.parseInt(eval[1]);
             checks++;
         } catch (Exception e) {
             metrics.add(new PgHealthMetric("Active Queries", "N/A", "Unknown"));
@@ -116,15 +113,82 @@ public class PostgresService {
                 "WHERE state = 'active' AND now() - query_start > interval '30 seconds' AND pid <> pg_backend_pid()"
             ).trim();
             int lq = Integer.parseInt(longQ);
-            String status = lq == 0 ? "OK" : lq <= 2 ? "Warning" : "Critical";
-            int s = lq == 0 ? 100 : lq <= 2 ? 60 : 20;
-            metrics.add(new PgHealthMetric("Long Queries (>30s)", String.valueOf(lq), status));
-            totalScore += s;
+            String[] eval = evaluate(lq, 1, 3);
+            metrics.add(new PgHealthMetric("Long Queries (>30s)", String.valueOf(lq), eval[0]));
+            totalScore += Integer.parseInt(eval[1]);
             checks++;
         } catch (Exception e) {
             metrics.add(new PgHealthMetric("Long Queries (>30s)", "N/A", "Unknown"));
         }
 
+        // Locks
+        try {
+            String locks = psql("SELECT count(*) FROM pg_locks WHERE granted = false").trim();
+            int lk = Integer.parseInt(locks);
+            String[] eval = evaluate(lk, 1, 5);
+            metrics.add(new PgHealthMetric("Waiting Locks", String.valueOf(lk), eval[0]));
+            totalScore += Integer.parseInt(eval[1]);
+            checks++;
+        } catch (Exception e) {
+            metrics.add(new PgHealthMetric("Waiting Locks", "N/A", "Unknown"));
+        }
+
+        // Oldest transaction
+        try {
+            String oldest = psql(
+                "SELECT COALESCE(EXTRACT(EPOCH FROM (now() - min(xact_start)))::int, 0) " +
+                "FROM pg_stat_activity WHERE xact_start IS NOT NULL AND pid <> pg_backend_pid()"
+            ).trim();
+            int sec = Integer.parseInt(oldest);
+            String[] eval = evaluate(sec, 300, 900);
+            String display = sec < 60 ? sec + "s" : (sec / 60) + "m " + (sec % 60) + "s";
+            metrics.add(new PgHealthMetric("Oldest Transaction", display, eval[0]));
+            totalScore += Integer.parseInt(eval[1]);
+            checks++;
+        } catch (Exception e) {
+            metrics.add(new PgHealthMetric("Oldest Transaction", "N/A", "Unknown"));
+        }
+
+        // Temp files (work_mem pressure)
+        try {
+            String tempFiles = psql(
+                "SELECT COALESCE(sum(temp_files), 0) FROM pg_stat_database"
+            ).trim();
+            int tf = Integer.parseInt(tempFiles);
+            String[] eval = evaluate(tf, 100, 1000);
+            metrics.add(new PgHealthMetric("Temp Files", String.valueOf(tf), eval[0]));
+            totalScore += Integer.parseInt(eval[1]);
+            checks++;
+        } catch (Exception e) {
+            metrics.add(new PgHealthMetric("Temp Files", "N/A", "Unknown"));
+        }
+
+        // Dead tuples ratio
+        try {
+            String deadPct = psql(
+                "SELECT ROUND(COALESCE(sum(n_dead_tup)*100.0 / NULLIF(sum(n_dead_tup)+sum(n_live_tup),0), 0), 1) " +
+                "FROM pg_stat_user_tables"
+            ).trim();
+            double dp = Double.parseDouble(deadPct);
+            String[] eval = evaluate(dp, 10, 25);
+            metrics.add(new PgHealthMetric("Dead Tuples", deadPct + "%", eval[0]));
+            totalScore += Integer.parseInt(eval[1]);
+            checks++;
+        } catch (Exception e) {
+            metrics.add(new PgHealthMetric("Dead Tuples", "N/A", "Unknown"));
+        }
+
+        // Autovacuum workers
+        try {
+            String av = psql(
+                "SELECT count(*) FROM pg_stat_activity WHERE query LIKE 'autovacuum%'"
+            ).trim();
+            metrics.add(new PgHealthMetric("Autovacuum Workers", av, "Info"));
+        } catch (Exception ignored) {
+            // non-critical metric
+        }
+
+        // Info metrics
         try {
             String size = psql("SELECT pg_size_pretty(pg_database_size(current_database()))").trim();
             metrics.add(new PgHealthMetric("DB Size", size, "Info"));
@@ -140,10 +204,55 @@ public class PostgresService {
             // non-critical metric
         }
 
+        // Cache hit per database (multi-tenant insight)
+        try {
+            String perDb = psql(
+                "SELECT datname || '|' || ROUND(100.0 * blks_hit / NULLIF(blks_hit + blks_read, 0), 1) " +
+                "FROM pg_stat_database " +
+                "WHERE datname NOT IN ('postgres','template0','template1') " +
+                "ORDER BY blks_hit / NULLIF(blks_hit + blks_read, 0.0001) ASC"
+            );
+            for (String line : perDb.split("\n")) {
+                String[] parts = line.trim().split("\\|");
+                if (parts.length == 2 && !parts[1].isEmpty()) {
+                    double hit = Double.parseDouble(parts[1]);
+                    String[] eval = evaluateReverse(hit, 95, 90);
+                    metrics.add(new PgHealthMetric("Cache: " + parts[0], parts[1] + "%", eval[0]));
+                }
+            }
+        } catch (Exception ignored) {
+            // non-critical metric
+        }
+
         int score = checks > 0 ? totalScore / checks : 0;
-        String level = score >= 80 ? "Good" : score >= 50 ? "Fair" : "Poor";
+        String level;
+        if (score >= 80) {
+            level = "Good";
+        } else if (score >= 50) {
+            level = "Fair";
+        } else {
+            level = "Poor";
+        }
 
         return new PgHealthResult(score, level, metrics);
+    }
+
+    private String[] evaluate(double value, double warnThreshold, double critThreshold) {
+        if (value < warnThreshold) {
+            return new String[]{"OK", "100"};
+        } else if (value < critThreshold) {
+            return new String[]{"Warning", "60"};
+        }
+        return new String[]{"Critical", "20"};
+    }
+
+    private String[] evaluateReverse(double value, double okThreshold, double warnThreshold) {
+        if (value >= okThreshold) {
+            return new String[]{"OK", "100"};
+        } else if (value >= warnThreshold) {
+            return new String[]{"Warning", "60"};
+        }
+        return new String[]{"Critical", "20"};
     }
 
     private String psql(String sql) {
