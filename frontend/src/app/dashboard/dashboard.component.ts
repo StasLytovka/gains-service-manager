@@ -217,14 +217,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   stopAll(): void {
-    this.bulkLoading = true;
-    this.api.stopAll().subscribe({
-      next: res => {
-        this.bulkLoading = false;
-        this.snack.open(`Stop all: ${res.successCount} OK / ${res.failCount} failed`, 'Close', { duration: 4000 });
-        setTimeout(() => this.refreshStatuses(), 2000);
-      },
-      error: () => { this.bulkLoading = false; }
+    const running = this.activeCount();
+    if (running === 0) {
+      this.snack.open('No active services to stop', 'Close', { duration: 3000 });
+      return;
+    }
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '440px',
+      data: {
+        title: 'Stop All Services?',
+        message: `${running} service(s) are currently running. Stop all of them?`,
+        confirmText: 'Stop All',
+        confirmColor: 'warn'
+      }
+    });
+    ref.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return;
+      this.bulkLoading = true;
+      this.api.stopAll().subscribe({
+        next: res => {
+          this.bulkLoading = false;
+          this.snack.open(`Stop all: ${res.successCount} OK / ${res.failCount} failed`, 'Close', { duration: 4000 });
+          setTimeout(() => this.refreshStatuses(), 2000);
+        },
+        error: () => { this.bulkLoading = false; }
+      });
     });
   }
 

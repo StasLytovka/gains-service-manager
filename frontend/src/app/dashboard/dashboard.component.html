@@ -10,29 +10,6 @@
   <span class="title">Service Manager</span>
   <span class="spacer"></span>
 
-  <!-- PostgreSQL controls -->
-  <div class="pg-controls">
-    <span class="pg-badge" [class]="'pg-' + postgres.status">
-      <mat-icon>storage</mat-icon>
-      PostgreSQL: {{ postgres.status }}
-    </span>
-    <button mat-icon-button
-            *ngIf="!pgActive"
-            [disabled]="pgLoading"
-            (click)="startPostgres()"
-            matTooltip="Start PostgreSQL">
-      <mat-icon>play_arrow</mat-icon>
-    </button>
-    <button mat-icon-button
-            *ngIf="pgActive"
-            [disabled]="pgLoading"
-            (click)="stopPostgres()"
-            matTooltip="Stop PostgreSQL">
-      <mat-icon>stop</mat-icon>
-    </button>
-    <mat-spinner *ngIf="pgLoading" diameter="18"></mat-spinner>
-  </div>
-
   <button mat-icon-button (click)="refreshStatuses()" [disabled]="refreshing" matTooltip="Refresh">
     <mat-icon [class.spinning]="refreshing">refresh</mat-icon>
   </button>
@@ -47,7 +24,30 @@
 
 <div class="content">
 
-  <!-- Summary cards -->
+  <!-- PostgreSQL row: badge left, Start/Stop PG right -->
+  <div class="pg-row">
+    <span class="pg-badge" [class]="'pg-' + postgres.status">
+      <mat-icon>storage</mat-icon>
+      PostgreSQL: {{ postgres.status }}
+    </span>
+    <div class="pg-actions">
+      <button mat-raised-button color="primary"
+              [disabled]="pgLoading || pgActive"
+              (click)="startPostgres()">
+        <mat-icon>play_arrow</mat-icon>
+        Start PG
+      </button>
+      <button mat-raised-button color="warn"
+              [disabled]="pgLoading || !pgActive"
+              (click)="stopPostgres()">
+        <mat-icon>stop</mat-icon>
+        Stop PG
+      </button>
+      <mat-spinner *ngIf="pgLoading" diameter="22"></mat-spinner>
+    </div>
+  </div>
+
+  <!-- Summary cards + bulk actions -->
   <div class="summary-row">
     <mat-card class="summary-card active-card">
       <mat-card-content>
@@ -70,7 +70,6 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Bulk actions -->
     <div class="bulk-actions">
       <button mat-raised-button color="primary"
               (click)="startAll()" [disabled]="bulkLoading || loading || !pgActive"
@@ -83,7 +82,7 @@
         <mat-icon>stop_circle</mat-icon>
         Stop All
       </button>
-      <mat-spinner *ngIf="bulkLoading" diameter="28"></mat-spinner>
+      <mat-spinner *ngIf="bulkLoading" diameter="22"></mat-spinner>
     </div>
   </div>
 

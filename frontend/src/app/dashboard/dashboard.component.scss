@@ -14,25 +14,20 @@
   .username-label { font-size: 13px; opacity: 0.8; }
 }
 
-.pg-controls {
+.pg-row {
   display: flex;
   align-items: center;
-  gap: 4px;
-  position: relative;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 
-  button {
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    mat-icon { font-size: 18px; }
-  }
-
-  mat-spinner {
-    position: absolute;
-    right: -24px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+.pg-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  button { gap: 4px; }
 }
 
 .pg-badge {
@@ -56,17 +51,17 @@
 
 .summary-row {
   display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 16px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .summary-card {
-  min-width: 120px;
+  min-width: 80px;
   text-align: center;
-  .big-num { font-size: 36px; font-weight: 700; }
-  .label   { font-size: 13px; opacity: 0.7; }
+  .big-num { font-size: 24px; font-weight: 700; }
+  .label   { font-size: 11px; opacity: 0.7; }
   &.active-card   .big-num { color: var(--gains-card-active); }
   &.inactive-card .big-num { color: var(--gains-card-inactive); }
   &.total-card    .big-num { color: var(--gains-card-total); }
