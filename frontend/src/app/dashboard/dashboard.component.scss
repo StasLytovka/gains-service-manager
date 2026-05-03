@@ -30,6 +30,16 @@
   button { gap: 4px; }
 }
 
+.pg-score {
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: center;
+  &.score-good { color: #388e3c; }
+  &.score-fair { color: #f9a825; }
+  &.score-poor { color: #c62828; }
+}
+
 .pg-badge {
   display: flex;
   align-items: center;

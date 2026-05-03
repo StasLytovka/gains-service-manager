@@ -32,6 +32,18 @@ export interface BulkResult {
   failCount: number;
 }
 
+export interface PgHealthMetric {
+  name: string;
+  value: string;
+  status: string;
+}
+
+export interface PgHealthResult {
+  score: number;
+  level: string;
+  metrics: PgHealthMetric[];
+}
+
 export interface LoginResponse {
   token: string;
   username: string;

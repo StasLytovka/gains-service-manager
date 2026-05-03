@@ -5,9 +5,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ThemeService } from '../services/theme.service';
-import { ServiceStatus, PostgresStatus } from '../models/service.model';
+import { ServiceStatus, PostgresStatus, PgHealthResult } from '../models/service.model';
 import { LogDialogComponent } from './log-dialog.component';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
+import { PgHealthDialogComponent } from './pg-health-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,6 +18,7 @@ import { ConfirmDialogComponent } from './confirm-dialog.component';
 export class DashboardComponent implements OnInit, OnDestroy {
   services: ServiceStatus[] = [];
   postgres: PostgresStatus = { status: 'unknown', message: '' };
+  pgHealth: PgHealthResult | null = null;
   loading       = true;
   bulkLoading   = false;
   refreshing    = false;
@@ -62,7 +64,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
     this.api.getPostgresStatus().subscribe({
-      next: pg => this.postgres = pg
+      next: pg => {
+        this.postgres = pg;
+        if (pg.status === 'active') this.loadPgHealth();
+      }
     });
   }
 
@@ -78,6 +83,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.api.getPostgresStatus().subscribe({
       next: pg => this.postgres = pg
     });
+  }
+
+  // --- PostgreSQL health ---
+
+  loadPgHealth(): void {
+    this.api.getPostgresHealth().subscribe({
+      next: h => this.pgHealth = h,
+      error: () => this.pgHealth = null
+    });
+  }
+
+  openPgHealth(): void {
+    if (!this.pgHealth) return;
+    this.dialog.open(PgHealthDialogComponent, {
+      width: '520px',
+      data: this.pgHealth
+    });
+  }
+
+  get scoreColor(): string {
+    if (!this.pgHealth) return '';
+    return this.pgHealth.score >= 80 ? 'score-good' : this.pgHealth.score >= 50 ? 'score-fair' : 'score-poor';
   }
 
   // --- PostgreSQL controls ---

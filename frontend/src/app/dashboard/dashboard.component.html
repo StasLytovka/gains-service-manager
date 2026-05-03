@@ -30,6 +30,13 @@
       <mat-icon>storage</mat-icon>
       PostgreSQL: {{ postgres.status }}
     </span>
+    <span class="pg-score" [class]="scoreColor" *ngIf="pgHealth">
+      {{ pgHealth.score }}
+    </span>
+    <button mat-icon-button *ngIf="pgHealth"
+            (click)="openPgHealth()" matTooltip="Health details">
+      <mat-icon>info_outline</mat-icon>
+    </button>
     <div class="pg-actions">
       <button mat-flat-button color="primary"
               [disabled]="pgLoading || pgActive"

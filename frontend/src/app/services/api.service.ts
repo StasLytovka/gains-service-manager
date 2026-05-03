@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ServiceStatus, ActionResult, LogResult,
-  PostgresStatus, BulkResult
+  PostgresStatus, BulkResult, PgHealthResult
 } from '../models/service.model';
 
 @Injectable({ providedIn: 'root' })
@@ -55,5 +55,9 @@ export class ApiService {
 
   stopPostgres(): Observable<ActionResult> {
     return this.http.post<ActionResult>(`${this.base}/postgres/stop`, {});
+  }
+
+  getPostgresHealth(): Observable<PgHealthResult> {
+    return this.http.get<PgHealthResult>(`${this.base}/postgres/health`);
   }
 }
