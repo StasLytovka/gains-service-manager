@@ -151,16 +151,16 @@ public class PostgresService {
 
         // Temp files (work_mem pressure)
         try {
-            String tempFiles = psql(
-                "SELECT COALESCE(sum(temp_files), 0) FROM pg_stat_database"
-            ).trim();
-            int tf = Integer.parseInt(tempFiles);
-            String[] eval = evaluate(tf, 100, 1000);
-            metrics.add(new PgHealthMetric("Temp Files", String.valueOf(tf), eval[0]));
-            totalScore += Integer.parseInt(eval[1]);
-            checks++;
-        } catch (Exception e) {
-            metrics.add(new PgHealthMetric("Temp Files", "N/A", "Unknown"));
+            String tempInfo = psql(
+              "SELECT COALESCE(sum(temp_files), 0), pg_size_pretty(COALESCE(sum(temp_bytes), 0)) FROM pg_stat_database")
+                    .trim();
+            String[] parts = tempInfo.split("\\|");
+            if (parts.length == 2) {
+                String display = parts[0].trim() + " files / " + parts[1].trim();
+                metrics.add(new PgHealthMetric("Temp Files", display, "Info"));
+            }
+        } catch (Exception ignored) {
+            // non-critical metric
         }
 
         // Dead tuples ratio (across all tenant DBs)
