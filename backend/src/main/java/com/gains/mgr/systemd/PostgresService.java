@@ -60,9 +60,9 @@ public class PostgresService {
 
         try {
             String connInfo = psql(
-                "SELECT numbackends, " +
+                "SELECT sum(numbackends), " +
                 "(SELECT setting::int FROM pg_settings WHERE name='max_connections') " +
-                "FROM pg_stat_database WHERE datname = current_database()"
+                "FROM pg_stat_database"
             );
             String[] connParts = connInfo.trim().split("\\|");
             if (connParts.length == 2) {
@@ -163,13 +163,29 @@ public class PostgresService {
             metrics.add(new PgHealthMetric("Temp Files", "N/A", "Unknown"));
         }
 
-        // Dead tuples ratio
+        // Dead tuples ratio (across all tenant DBs)
         try {
-            String deadPct = psql(
-                "SELECT ROUND(COALESCE(sum(n_dead_tup)*100.0 / NULLIF(sum(n_dead_tup)+sum(n_live_tup),0), 0), 1) " +
-                "FROM pg_stat_user_tables"
-            ).trim();
-            double dp = Double.parseDouble(deadPct);
+            String deadInfo = shell.exec(List.of(
+                "sudo", "-u", "postgres", "psql", "-t", "-A", "-c",
+                "SELECT datname FROM pg_database WHERE datname NOT IN ('postgres','template0','template1')"
+            ), 5);
+            long totalDead = 0;
+            long totalLive = 0;
+            for (String db : deadInfo.split("\n")) {
+                if (db.isBlank()) continue;
+                String row = shell.exec(List.of(
+                    "sudo", "-u", "postgres", "psql", "-t", "-A", "-d", db.trim(), "-c",
+                    "SELECT COALESCE(sum(n_dead_tup),0), COALESCE(sum(n_live_tup),0) FROM pg_stat_user_tables"
+                ), 5).trim();
+                String[] parts = row.split("\\|");
+                if (parts.length == 2) {
+                    totalDead += Long.parseLong(parts[0].trim());
+                    totalLive += Long.parseLong(parts[1].trim());
+                }
+            }
+            double dp = (totalDead + totalLive) > 0
+                    ? totalDead * 100.0 / (totalDead + totalLive) : 0;
+            String deadPct = String.valueOf(Math.round(dp * 10) / 10.0);
             String[] eval = evaluate(dp, 10, 25);
             metrics.add(new PgHealthMetric("Dead Tuples", deadPct + "%", eval[0]));
             totalScore += Integer.parseInt(eval[1]);
@@ -190,7 +206,7 @@ public class PostgresService {
 
         // Info metrics
         try {
-            String size = psql("SELECT pg_size_pretty(pg_database_size(current_database()))").trim();
+            String size = psql("SELECT pg_size_pretty(sum(pg_database_size(datname))) FROM pg_database WHERE datistemplate = false").trim();
             metrics.add(new PgHealthMetric("DB Size", size, "Info"));
         } catch (Exception ignored) {
             // non-critical metric
