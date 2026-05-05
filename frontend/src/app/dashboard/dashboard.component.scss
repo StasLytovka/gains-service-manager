@@ -28,7 +28,15 @@
   align-items: center;
   gap: 12px;
   margin-left: auto;
+  position: relative;
   button { gap: 4px; }
+
+  mat-spinner {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .pg-health-group {
@@ -87,7 +95,15 @@
   gap: 12px;
   align-items: center;
   margin-left: auto;
+  position: relative;
   button { gap: 4px; }
+
+  mat-spinner {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .table-card { overflow: hidden; }

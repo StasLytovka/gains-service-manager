@@ -36,14 +36,25 @@ public class ShellExecutor {
             boolean finished = process.waitFor(timeout, TimeUnit.SECONDS);
             if (!finished) {
                 process.destroyForcibly();
+                LOGGER.error("TIMEOUT [{}s]: {}", timeout, label);
                 throw new RuntimeException("Command timed out: " + label);
             }
 
-            return new String(process.getInputStream().readAllBytes());
+            String output = new String(process.getInputStream().readAllBytes());
+            int exitCode = process.exitValue();
+
+            if (exitCode != 0) {
+                LOGGER.warn("EXIT [{}]: {} | output: {}", exitCode, label, output.trim());
+            } else {
+                LOGGER.debug("OK: {} | output: {}", label, output.trim());
+            }
+
+            return output;
 
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
+            LOGGER.error("FAILED: {} | error: {}", label, e.getMessage());
             throw new RuntimeException("Failed to execute: " + label + " — " + e.getMessage());
         }
     }
