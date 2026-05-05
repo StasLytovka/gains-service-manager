@@ -206,7 +206,10 @@ public class PostgresService {
 
         // Info metrics
         try {
-            String size = psql("SELECT pg_size_pretty(sum(pg_database_size(datname))) FROM pg_database WHERE datistemplate = false").trim();
+            String size =
+                    psql("SELECT pg_size_pretty(sum(pg_database_size(datname))) "
+                       + "FROM pg_database WHERE datistemplate = false")
+                            .trim();
             metrics.add(new PgHealthMetric("DB Size", size, "Info"));
         } catch (Exception ignored) {
             // non-critical metric
